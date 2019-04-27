@@ -6,30 +6,7 @@
     </artifacts-to-build>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa91219f-b8a8-4c30-9647-2e21b420fede" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/artifacts/PTM1_jar.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Commands/AssignCommand.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Commands/CommandExpression.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Commands/DisconnectCommand.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Commands/PredicateCommand.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Commands/ReturnCommand.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Experssions/BinaryExpression.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Experssions/Div.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Experssions/Expression.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Experssions/Minus.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Experssions/Mul.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Experssions/Number.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Experssions/Plus.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Experssions/PredicateExp.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Experssions/ShuntinYardPre.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Experssions/ShuntingYard.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/flight_sim/GenericFactory.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/flight_sim/LexerMain.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/flight_sim/Parser.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/flight_sim/ParserMain.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server_side/MySerialServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/server_side/MySerialServer.java" afterDir="false" />
-    </list>
+    <list default="true" id="aa91219f-b8a8-4c30-9647-2e21b420fede" name="Default Changelist" comment="" />
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/bin/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -172,7 +149,7 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds" extendedState="7">
     <option name="x" value="-10" />
     <option name="width" value="979" />
     <option name="height" value="1040" />
@@ -207,6 +184,7 @@
     <property name="GenerateAntBuildDialog.enableUiFormCompile" value="true" />
     <property name="GenerateAntBuildDialog.forceTargetJdk" value="true" />
     <property name="GenerateAntBuildDialog.outputFileNameProperty" value="ptm1" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
@@ -282,12 +260,12 @@
       <workItem from="1555337174524" duration="1135000" />
       <workItem from="1555338350696" duration="60335000" />
       <workItem from="1555860790130" duration="216000" />
-      <workItem from="1556367360331" duration="235000" />
+      <workItem from="1556367360331" duration="828000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="61921000" />
+    <option name="totallyTimeSpent" value="62514000" />
   </component>
   <component name="TodoView" selected-index="2">
     <todo-panel id="selected-file">
@@ -299,7 +277,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-7" y="-7" width="1550" height="838" extended-state="7" />
+    <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.21208054" />
