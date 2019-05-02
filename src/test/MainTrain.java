@@ -58,16 +58,27 @@ public class MainTrain {
 		String[] test5={
 				"var x = 0",
 				"var y = "+rand,
-				"while x < 5+1 {",
+				"while x < 5+1 && x>=0 {",
 				"	y = y + 2",
 				"	x = x + 1",
 				"}",
 				"return y"	
 		};
+		String[] test6={
+				"var x = 0",
+				"var y = 0",
+				"while x < 5+1 && x>=0 || y<10 {",
+				"	y = y + 2",
+				"	x = x + 1",
+				"}",
+				"return y"
+		};
 		
-		if(MyInterpreter.interpret(test5)!=rand+2*6)
+		//if(MyInterpreter.interpret(test5)!=rand+2*6)
+			//System.out.println("failed test5 (-20)");
+		if(MyInterpreter.interpret(test6)!=2*6)
 			System.out.println("failed test5 (-20)");
-		
+
 		sim.close();
 		System.out.println("done");
 	}

@@ -3,8 +3,8 @@ package Commands;
 import Experssions.Expression;
 
 public class CommandExpression implements Expression {
-    Command c;
-    public String[] s;
+    private Command c;
+    private String[] s;
 
     public CommandExpression(Command c) {
         this.c = c;
