@@ -1,5 +1,6 @@
 package Commands;
 
+import Experssions.CoditionBulider;
 import Experssions.ShuntinYardPre;
 import flight_sim.ParserMain;
 import flight_sim.Var;
@@ -23,6 +24,6 @@ public class PredicateCommand implements Command {
         for(int i=1;i<array.length-1;i++){
             s.append(array[i]);
         }
-        bool= ShuntinYardPre.calc(s.toString());
+        bool= CoditionBulider.calc(s.toString());
     }
 }

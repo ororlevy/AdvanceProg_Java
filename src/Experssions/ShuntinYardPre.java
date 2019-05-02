@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.Stack;
 
 public class ShuntinYardPre {
+
     public static double calc(String expression) {
         if (!validations(expression))
             System.out.println("throw exception");
@@ -22,7 +23,15 @@ public class ShuntinYardPre {
                         || (i + 1 < len && expression.charAt(i + 1) == '.'))
                     token = token + expression.charAt(++i);
             }
-
+            else if((expression.charAt(i) >= '<' && expression.charAt(i) <= '>')||expression.charAt(i)=='!')
+            {
+                if(expression.charAt(i+1)=='=') {
+                    token = expression.charAt(i) + "";
+                    token = token + expression.charAt(++i);
+                }
+                else
+                    token = expression.charAt(i) + "";
+            }
             else if ((expression.charAt(i) >= 'A' && expression.charAt(i) <= 'Z')||(expression.charAt(i) >= 'a' && expression.charAt(i) <= 'z')) {
                 token = expression.charAt(i) + "";
                 while (i<expression.length()-1&&((expression.charAt(i+1) >= 'A' && expression.charAt(i+1) <= 'Z')||(expression.charAt(i+1) >= 'a' && expression.charAt(i+1) <= 'z')))
