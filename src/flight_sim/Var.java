@@ -10,24 +10,45 @@ public class Var extends Observable implements Observer {
 
 	@Override
 	public void update(Observable o, Object arg) {
-		if(this.v!=(double)arg)
-			this.setV((double)arg);
+		Double d=new Double(0);
+		if(arg.getClass()==(d.getClass()))
+			if(this.v!=(double)arg) {
+				this.setV((double) arg);
+				this.setChanged();
+				this.notifyObservers(arg+"");
+			}
+
+
+	}
+
+	@Override
+	public String toString() {
+		return this.Loc;
 	}
 
 	public Var(double v) {
 		this.v=v;
+		this.Loc=null;
 	}
 	public Var() {
 
+	}
+	public Var(String loc) {
+		super();
+		Loc = loc;
 	}
 
 	public double getV() {
 		return v;
 	}
+
 	public void setV(double v) {
-		this.v = v;
-		setChanged();
-		notifyObservers(v);
+		if(this.v!=v) {
+			this.v = v;
+			setChanged();
+			notifyObservers(v);
+		}
+
 
 	}
 	public String getName() {

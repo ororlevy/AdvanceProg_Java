@@ -2,8 +2,10 @@ package flight_sim;
 
 import Commands.*;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Scanner;
 
 public class ParserMain implements Parser {
     private HashMap<String, CommandExpression> cmdTbl=new HashMap<>();
@@ -12,8 +14,11 @@ public class ParserMain implements Parser {
     private ArrayList<String[]> lines;
     private ArrayList<CommandExpression> comds;
     public static double returnval;
+    public static HashMap<String, String> varLocations = new HashMap<>();
+    public static ArrayList<String> vars;
 
     public ParserMain(ArrayList<String[]> lines) {
+
         this.comds=new ArrayList<>();
         this.lines = lines;
         symTbl=new HashMap<>();
@@ -24,6 +29,8 @@ public class ParserMain implements Parser {
         cmdFac.insertProduct("return",ReturnCommand.class);
         cmdFac.insertProduct("=",AssignCommand.class);
         cmdFac.insertProduct("disconnect",DisconnectCommand.class);
+        cmdFac.insertProduct("print",PrintCommand.class);
+        cmdFac.insertProduct("sleep",SleepCommand.class);
         cmdTbl.put("openDataServer", new CommandExpression(new OpenDataServer()));
         cmdTbl.put("connect",new CommandExpression(new ConnectCommand()));
         cmdTbl.put("while",new CommandExpression(new LoopCommand()));
@@ -31,9 +38,22 @@ public class ParserMain implements Parser {
         cmdTbl.put("return",new CommandExpression(new ReturnCommand()));
         cmdTbl.put("=",new CommandExpression(new AssignCommand()));
         cmdTbl.put("disconnect",new CommandExpression(new DisconnectCommand()));
-        symTbl.put("simX",new Var());
-        symTbl.put("simY",new Var());
-        symTbl.put("simZ",new Var());
+        Scanner s= null;
+        try {
+            s = new Scanner(new BufferedReader(new FileReader("simulator_vars.txt")));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        vars=new ArrayList<>();
+        while(s.hasNext())
+        {
+            vars.add(s.nextLine());
+        }
+        for (String str:vars)
+        {
+            symTbl.put(str,new Var(str));
+        }
+
     }
 
     private ArrayList<CommandExpression> parseCommands(ArrayList<String[]> array){
@@ -64,6 +84,7 @@ public class ParserMain implements Parser {
     public double parse() {
         this.comds=this.parseCommands(lines);
         for (CommandExpression e:comds) {
+            //System.out.println(e.getS()[1]);
             e.calculate();
         }
         return returnval;
