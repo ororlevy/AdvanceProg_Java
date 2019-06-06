@@ -31,6 +31,7 @@ public class ParserMain implements Parser {
         cmdFac.insertProduct("disconnect",DisconnectCommand.class);
         cmdFac.insertProduct("print",PrintCommand.class);
         cmdFac.insertProduct("sleep",SleepCommand.class);
+        cmdFac.insertProduct("predicate",PredicateCommand.class);
         cmdTbl.put("openDataServer", new CommandExpression(new OpenDataServer()));
         cmdTbl.put("connect",new CommandExpression(new ConnectCommand()));
         cmdTbl.put("while",new CommandExpression(new LoopCommand()));
@@ -94,10 +95,10 @@ public class ParserMain implements Parser {
 
     private Command parseCondition(ArrayList<String[]> array) {
 
-        ConditionCommand c=(ConditionCommand)cmdTbl.get(array.get(0)[0]).getC();
+        ConditionCommand c=(ConditionCommand)cmdFac.getNewProduct(array.get(0)[0]);
         int i=0;
         ArrayList<CommandExpression> tmp=new ArrayList<>();
-        CommandExpression cmdtmp=new CommandExpression(new PredicateCommand());
+        CommandExpression cmdtmp=new CommandExpression((Command)cmdFac.getNewProduct("predicate"));
         cmdtmp.setS(array.get(0));
         tmp.add(cmdtmp);
         c.setCommands(tmp);
