@@ -6,7 +6,7 @@ import java.net.Socket;
 
 public class ClientSim {
     public static volatile boolean stop=false;
-    private PrintWriter out;
+    private static PrintWriter out;
     public void Connect(String ip,int port){
         new Thread(()->{
             Socket socket = null;
@@ -35,6 +35,8 @@ public class ClientSim {
 
     public void Send(String[] data){
         for (String s: data) {
+            out.println(s);
+            out.flush();
             System.out.println(s);
         }
 

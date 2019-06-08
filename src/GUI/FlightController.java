@@ -1,37 +1,25 @@
 package GUI;
 
 
-import Commands.Command;
-import Commands.ConnectCommand;
+import Commands.CommandExpression;
+import Commands.DisconnectCommand;
 import Model.ClientSim;
 import Model.Interpter;
-import flight_sim.ParsherAutoPilot;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
+import flight_sim.ParserAutoPilot;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Bounds;
-import javafx.geometry.Point2D;
-import javafx.geometry.Point3D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
-import javafx.scene.text.Text;
-import javafx.stage.FileChooser;
-import javafx.stage.Modality;
-import javafx.stage.Popup;
 import javafx.stage.Stage;
 
 import javax.swing.*;
 import java.io.*;
-import java.net.Socket;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
@@ -63,8 +51,8 @@ public class FlightController implements Initializable {
     @FXML
     private Circle Joystick;
     private ClientSim cls=new ClientSim();
-    private Interpter interpter=new Interpter();
-    private static int Who=-1;
+    private Interpter interpter=new Interpter();;
+    private static int Who;
     double orgSceneX, orgSceneY;
     double orgTranslateX, orgTranslateY;
 
@@ -193,7 +181,7 @@ public class FlightController implements Initializable {
         {
             if(manual.isSelected())
             {
-                manual.setSelected(false);
+                manual.fire();
             }
             interpter.execute();
         }
@@ -201,9 +189,11 @@ public class FlightController implements Initializable {
         {
             if(auto.isSelected())
             {
-                auto.setSelected(false);
-                ParsherAutoPilot.stop=true;
+                auto.fire();
+                CommandExpression c=new CommandExpression(new DisconnectCommand());
+                c.calculate();
             }
+
         }
     }
 
@@ -231,11 +221,13 @@ public class FlightController implements Initializable {
                     if(isInCircle(newTranslateX,newTranslateY)) {
                         ((Circle) (t.getSource())).setTranslateX(newTranslateX);
                         ((Circle) (t.getSource())).setTranslateY(newTranslateY);
-                        String[] data={
-                                "set /controls/flight/aileron "+nirmulX(newTranslateX),
-                                "set /controls/flight/elevator "+nirmulY(newTranslateY),
-                        };
-                        cls.Send(data);
+                        if(manual.isSelected()) {
+                            String[] data = {
+                                    "set /controls/flight/aileron " + nirmulX(newTranslateX),
+                                    "set /controls/flight/elevator " + nirmulY(newTranslateY),
+                            };
+                            cls.Send(data);
+                        }
                     }
                 }
             };
@@ -271,15 +263,19 @@ public class FlightController implements Initializable {
         if(location.getPath().equals("/C:/Users/ororl/GitHub/PTM1/production/GitHub/GUI/Flight.fxml")) {
             throttle.valueProperty().addListener((observable, oldValue, newValue) -> {
                 String[] data={"set /controls/engines/current-engine/throttle "+newValue.doubleValue()};
+                if(manual.isSelected())
                 cls.Send(data);
             });
             rudder.valueProperty().addListener((observable, oldValue, newValue) -> {
                 String[] data={"set /controls/flight/rudder "+newValue.doubleValue()};
+                if(manual.isSelected())
                 cls.Send(data);
             });
             Joystick.setOnMousePressed(circleOnMousePressedEventHandler);
             Joystick.setOnMouseDragged(circleOnMouseDraggedEventHandler);
             Joystick.setOnMouseReleased(circleOnMouseReleasedEventHandler);
+
+            Who=-1;
         }
     }
 

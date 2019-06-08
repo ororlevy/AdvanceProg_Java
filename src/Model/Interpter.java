@@ -1,19 +1,21 @@
 package Model;
 
+import Commands.CommandExpression;
+import Commands.DisconnectCommand;
 import flight_sim.*;
 
 public class Interpter {
-    ParsherAutoPilot parser;
+    ParserAutoPilot parser;
     Lexer lexer;
 
    public void interpet(String[] list){
        lexer=new LexerMain(list);
-       parser=new ParsherAutoPilot(new ParserMain(lexer.lex()));
+       parser=new ParserAutoPilot(new ParserMain(lexer.lex()));
        parser.parse();
    }
    public void execute()
    {
-       ParsherAutoPilot.stop=false;
+       ParserAutoPilot.stop=false;
        parser.execute();
 
    }

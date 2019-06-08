@@ -1,12 +1,15 @@
 package flight_sim;
 
 import Commands.CommandExpression;
+import Commands.DisconnectCommand;
+import Commands.LoopCommand;
 
-public class ParsherAutoPilot {
+public class ParserAutoPilot {
     ParserMain p;
     public static volatile boolean stop=true;
+    public static Thread  exe;
 
-    public ParsherAutoPilot(ParserMain p) {
+    public ParserAutoPilot(ParserMain p) {
         this.p = p;
     }
     public void parse() {
@@ -14,7 +17,7 @@ public class ParsherAutoPilot {
     }
 
     public void execute(){
-        new Thread(()->{
+        exe=new Thread(()->{
             while(true)
             {
                 int i=0;
@@ -24,7 +27,9 @@ public class ParsherAutoPilot {
                 }
 
             }
-        }).start();
+        });
+
+        exe.start();
 
     }
 }
