@@ -8,6 +8,7 @@ public class MyInterpreter {
 	public static  int interpret(String[] lines){
 		LexerMain lex=new LexerMain(lines);
 		ParserMain p=new ParserMain(lex.lex());
-		return (int)p.parse();
+		p.parse();
+		return (int)p.execute();
 	}
 }

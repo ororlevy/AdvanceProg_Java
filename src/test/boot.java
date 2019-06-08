@@ -41,5 +41,6 @@ public class boot {
         LexerMain lex=new LexerMain("script.txt");
         ParserMain par=new ParserMain(lex.lex());
         par.parse();
+        par.execute();
     }
 }

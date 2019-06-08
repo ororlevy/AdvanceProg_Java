@@ -12,7 +12,7 @@ public class ParserMain implements Parser {
     private GenericFactory cmdFac=new GenericFactory();
     public static HashMap<String,Var> symTbl;
     private ArrayList<String[]> lines;
-    private ArrayList<CommandExpression> comds;
+    public ArrayList<CommandExpression> comds;
     public static double returnval;
     public static HashMap<String, String> varLocations = new HashMap<>();
     public static ArrayList<String> vars;
@@ -82,8 +82,12 @@ public class ParserMain implements Parser {
         return commands;
     }
 
-    public double parse() {
+    public void parse() {
         this.comds=this.parseCommands(lines);
+
+    }
+
+    public double execute(){
         for (CommandExpression e:comds) {
             //System.out.println(e.getS()[1]);
             e.calculate();
