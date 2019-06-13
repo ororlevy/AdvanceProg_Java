@@ -11,7 +11,7 @@ public class ParserMain implements Parser {
     private HashMap<String, CommandExpression> cmdTbl=new HashMap<>();
     private GenericFactory cmdFac=new GenericFactory();
     public static HashMap<String,Var> symTbl;
-    private ArrayList<String[]> lines;
+    public ArrayList<String[]> lines;
     public ArrayList<CommandExpression> comds;
     public static double returnval;
     public static HashMap<String, String> varLocations = new HashMap<>();

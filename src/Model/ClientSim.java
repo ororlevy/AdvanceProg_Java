@@ -1,8 +1,12 @@
 package Model;
 
+import java.beans.XMLDecoder;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class ClientSim {
     public static volatile boolean stop=false;
@@ -16,9 +20,7 @@ public class ClientSim {
                 out=new PrintWriter(socket.getOutputStream());
                 while(!stop){
 
-
                 }
-
                 out.close();
                 socket.close();
             } catch (IOException e) {

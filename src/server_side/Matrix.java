@@ -13,7 +13,7 @@ public class Matrix implements Searchable {
 	public Matrix(int[][] matrix) {
 		this.matrix = matrix;
 		stateMatrix=new MatrixState[matrix.length][matrix[0].length];
-		for (int i = 0; i < matrix.length; i++) {
+		for (int i = 0; i < matrix.length-1; i++) {
 			for (int j = 0; j < matrix[i].length; j++) {
 				stateMatrix[i][j]=new MatrixState(i+","+j);
 				stateMatrix[i][j].setCost(matrix[i][j]);

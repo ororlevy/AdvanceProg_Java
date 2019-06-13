@@ -4,17 +4,18 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
-import java.awt.*;
+
 
 public class MapDisplayer extends Canvas {
     int[][] mapData;
     double min=Double.MAX_VALUE;
     double max=0;
 
+
     public void setMapData(int[][] mapData) {
         this.mapData = mapData;
 
-        for (int i=0;i<mapData.length;i++)
+        for(int i=0;i<mapData.length;i++)
             for (int j=0;j<mapData[i].length;j++)
             {
                 if(min>mapData[i][j])
@@ -30,6 +31,7 @@ public class MapDisplayer extends Canvas {
             {
                 mapData[i][j]=(int)((mapData[i][j]-min)/(max-min)*(new_max-new_min)+new_min);
             }
+
 
 
         redraw();
@@ -50,6 +52,8 @@ public class MapDisplayer extends Canvas {
                     gc.setFill(Color.rgb(255-tmp,0+tmp,0));
                     gc.fillRect(j*w,i*h,w,h);
                 }
+
+
         }
     }
 }
