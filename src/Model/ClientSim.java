@@ -11,7 +11,9 @@ import java.util.ArrayList;
 public class ClientSim {
     public static volatile boolean stop=false;
     private static PrintWriter out;
+    private static Socket socket;
     public void Connect(String ip,int port){
+        /*
         new Thread(()->{
             Socket socket = null;
             try {
@@ -33,6 +35,16 @@ public class ClientSim {
             }
 
         }).start();
+
+         */
+        try {
+            socket = new Socket(ip, port);
+            out=new PrintWriter(socket.getOutputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Connect to server");
+
     }
 
     public void Send(String[] data){

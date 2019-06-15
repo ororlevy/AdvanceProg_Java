@@ -16,7 +16,7 @@ public class ViewModel extends Observable implements Observer {
     public DoubleProperty elevator;
     public StringProperty ip;
     public StringProperty port;
-    private ClientSim clientSim;
+   // private ClientSim clientSim;
     public DoubleProperty airplaneX;
     public DoubleProperty airplaneY;
     public DoubleProperty startX;
@@ -24,8 +24,12 @@ public class ViewModel extends Observable implements Observer {
     public DoubleProperty offset;
     public StringProperty script;
     public DoubleProperty heading;
+    public DoubleProperty markSceneX, markSceneY;
+    public BooleanProperty path;
+    public static Object lock=new Object();
     private int data[][];
     private Model model;
+
 
     public void setData(int[][] data)
     {
@@ -34,7 +38,7 @@ public class ViewModel extends Observable implements Observer {
     }
 
     public ViewModel() {
-        this.clientSim = new ClientSim();
+        //this.clientSim = new ClientSim();
         throttle=new SimpleDoubleProperty();
         rudder=new SimpleDoubleProperty();
         aileron=new SimpleDoubleProperty();
@@ -48,6 +52,9 @@ public class ViewModel extends Observable implements Observer {
         offset=new SimpleDoubleProperty();
         script=new SimpleStringProperty();
         heading=new SimpleDoubleProperty();
+        markSceneX=new SimpleDoubleProperty();
+        markSceneY=new SimpleDoubleProperty();
+        path=new SimpleBooleanProperty();
 
     }
 
@@ -58,12 +65,12 @@ public class ViewModel extends Observable implements Observer {
 
     public void setThrottle(){
         String[] data={"set /controls/engines/current-engine/throttle "+throttle.getValue()};
-        clientSim.Send(data);
+        model.send(data);
     }
 
     public void setRudder(){
         String[] data={"set /controls/flight/rudder "+rudder.getValue()};
-        clientSim.Send(data);
+        model.send(data);
     }
 
     public void setJoystick(){
@@ -71,11 +78,11 @@ public class ViewModel extends Observable implements Observer {
                 "set /controls/flight/aileron " + aileron.getValue(),
                 "set /controls/flight/elevator " + elevator.getValue(),
         };
-        clientSim.Send(data);
+        model.send(data);
     }
 
     public void connect(){
-        clientSim.Connect(ip.getValue(),Integer.parseInt(port.getValue()));
+        model.connectManual(ip.getValue(),Integer.parseInt(port.getValue()));
     }
 
     public void parse(){
@@ -99,21 +106,47 @@ public class ViewModel extends Observable implements Observer {
     public void stopAutoPilot(){
         model.stopAutoPilot();
     }
+    public void findPath(double h,double w) {
+        if (path.getValue())
+        {
+            synchronized (ViewModel.lock) {
+                ViewModel.lock.notifyAll();
+            }
+        }
+        else
+            {
+                model.connectPath(ip.getValue(), Integer.parseInt(port.getValue()));
+
+            }
+        model.findPath((int) (airplaneY.getValue()/-1), (int) (airplaneX.getValue() +15),Math.abs( (int) (markSceneY.getValue() / h)) ,
+               Math.abs((int) (markSceneX.getValue() / w)), data );
+       // model.findPath((int) (airplaneY.getValue()/-1), (int) (airplaneX.getValue() +15),Math.abs( (int) (markSceneY.getValue() +1)) ,
+               // Math.abs((int) (markSceneX.getValue()+1)), data );
+              // , data );
+    }
+
     @Override
     public void update(Observable o, Object arg) {
         if(o==model)
         {
             String[] tmp=(String[])arg;
-            double x=Double.parseDouble(tmp[0]);
-            double y=Double.parseDouble(tmp[1]);
-            x=(x-startX.getValue()+offset.getValue());
-            x/=offset.getValue();
-            y=(y-startY.getValue()+offset.getValue())/offset.getValue();
-            airplaneX.setValue(x);
-            airplaneY.setValue(y);
-            heading.setValue(Double.parseDouble(tmp[2]));
-            setChanged();
-            notifyObservers();
+            if(tmp[0].equals("plane")) {
+                double x = Double.parseDouble(tmp[1]);
+                double y = Double.parseDouble(tmp[2]);
+                x = (x - startX.getValue() + offset.getValue());
+                x /= offset.getValue();
+                y = (y - startY.getValue() + offset.getValue()) / offset.getValue();
+                airplaneX.setValue(x);
+                airplaneY.setValue(y);
+                heading.setValue(Double.parseDouble(tmp[3]));
+                setChanged();
+                notifyObservers();
+            }
+            else if(tmp[0].equals("path"))
+            {
+                setChanged();
+                notifyObservers(tmp);
+            }
         }
     }
 }

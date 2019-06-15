@@ -3,7 +3,9 @@ package GUI;
 
 
 import Model.Interpter;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -16,7 +18,10 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.QuadCurve;
 import javafx.stage.Stage;
 
 import javax.swing.*;
@@ -29,6 +34,8 @@ public class FlightController implements Initializable, Observer {
 
     @FXML
     private Canvas airplane;
+    @FXML
+    private Canvas markX;
     @FXML
     private  TextArea TextArea;
     @FXML
@@ -52,10 +59,13 @@ public class FlightController implements Initializable, Observer {
     private Circle border;
     @FXML
     private Circle Joystick;
-    //private Interpter interpter;
+    @FXML
+    private TitledPane background;
+
     private static int Who;
     double orgSceneX, orgSceneY;
     double orgTranslateX, orgTranslateY;
+    public DoubleProperty markSceneX, markSceneY;
     private ViewModel viewModel;
     public DoubleProperty aileron;
     public DoubleProperty elevator;
@@ -69,7 +79,9 @@ public class FlightController implements Initializable, Observer {
     public double lastY;
     public int mapData[][];
     private Image plane[];
-
+    private Image mark;
+    private BooleanProperty path;
+    private String[] solution;
 
     public void LoadDate() {
         JFileChooser fileChooser = new JFileChooser();
@@ -170,9 +182,16 @@ public class FlightController implements Initializable, Observer {
 
     public void Calc(){
         Parent root = null;
+
         try {
             FXMLLoader fxmlLoader=new FXMLLoader(getClass().getResource("Popup.fxml"));
             root = fxmlLoader.load();
+            FlightController fc=fxmlLoader.getController();
+            fc.viewModel=this.viewModel;
+            fc.mapData=this.mapData;
+            fc.markX=this.markX;
+            fc.path=new SimpleBooleanProperty();
+            fc.path.bindBidirectional(this.path);
             stage.setTitle("Popup");
             stage.setScene(new Scene(root));
             if(!stage.isShowing()) {
@@ -197,7 +216,14 @@ public class FlightController implements Initializable, Observer {
         }
         if(this.Who==1)
         {
-
+            double H = markX.getHeight();
+            double W = markX.getWidth();
+            double h = H / mapData.length;
+            double w = W / mapData[0].length;
+            viewModel.findPath(h,w);
+            path.setValue(true);
+            Stage stage = (Stage) submit.getScene().getWindow();
+            stage.close();
         }
         ip.clear();
         port.clear();
@@ -268,33 +294,129 @@ public class FlightController implements Initializable, Observer {
                 gc.drawImage(plane[6], w*lastX, lastY*h, 25, 25);
             if(heading.getValue()>=315)
                 gc.drawImage(plane[7], w*lastX, lastY*h, 25, 25);
-
-
-            /*
-            new Thread(()->{
-                while(true) {
-                    double H = airplane.getHeight();
-                    double W = airplane.getWidth();
-                    double h = H / mapData.length;
-                    double w = W / mapData[0].length;
-                    GraphicsContext gc = airplane.getGraphicsContext2D();
-                    double tmpX=airplaneX.getValue();
-                    double tmpY=airplaneY.getValue()*-1;
-                    gc.drawImage(plane, w*tmpX, tmpY*h, 25, 25);
-
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    gc.clearRect(0,0,W,H);
-                }
-        }).start();
-
-             */
         }
 
     }
+
+    public void drawMark(){
+        double H = markX.getHeight();
+        double W = markX.getWidth();
+        double h = H / mapData.length;
+        double w = W / mapData[0].length;
+        GraphicsContext gc = markX.getGraphicsContext2D();
+        gc.clearRect(0,0,W,H);
+       // markSceneX.setValue(nirmulMarkX(markSceneX.getValue()));
+       // markSceneY.setValue(nirmulMarkY(markSceneY.getValue()));
+        //gc.drawImage(mark, markSceneX.getValue()-13,markSceneY.getValue()-13 , 25, 25);
+        gc.drawImage(mark, markSceneX.getValue()-13,markSceneY.getValue() , 25, 25);
+        if(path.getValue())
+            viewModel.findPath(h,w);
+    }
+
+    private double nirmulMarkX(double num)
+    {
+        double max=background.getWidth();
+        double min=0;
+        double new_min=markX.getLayoutX();
+        double new_max=markX.getWidth()+new_min;
+        return num-new_min;
+    }
+    private double nirmulMarkY(double num)
+    {
+        double max=background.getHeight();
+        double min=0;
+        double new_min=markX.getLayoutY();
+        double new_max=markX.getHeight();
+        return num-(max-new_max-1.75*new_min);
+    }
+
+    public void drawLine(){
+        double H = markX.getHeight();
+        double W = markX.getWidth();
+        double h = H / mapData.length;
+        double w = W / mapData[0].length;
+        GraphicsContext gc=markX.getGraphicsContext2D();
+        String move=solution[1];
+        double x= airplaneX.getValue()*w+10*w;
+        double y=airplaneY.getValue()*-h+6*h;
+        int count=0;
+        //gc.setStroke(Color.BLACK);
+        //gc.strokeLine(x,y,markSceneX.getValue(),markSceneY.getValue());
+
+        for(int i=2;i<solution.length;i++)
+        {
+            switch (move) {
+                case "Right":
+                    gc.setStroke(Color.BLACK);
+                    gc.strokeLine(x, y, x + w, y);
+                    x +=  w;
+                    break;
+                case "Left":
+                    gc.setStroke(Color.BLACK);
+                    gc.strokeLine(x, y, x -  w, y);
+                    x -=  w;
+                    break;
+                case "Up":
+                    gc.setStroke(Color.BLACK);
+                    gc.strokeLine(x, y, x, y - h);
+                    y -=  h;
+                    break;
+                case "Down":
+                    gc.setStroke(Color.BLACK);
+                    gc.strokeLine(x, y, x, y +  h);
+                    y += h;
+            }
+            move=solution[i];
+            /*
+            if(move.equals(solution[i]))
+            {
+                count++;
+            }
+            else
+            {
+
+                switch (move) {
+                    case "Right":
+                        gc.setStroke(Color.BLACK);
+                        gc.strokeLine(x,y,x+count*w,y);
+                        x+=count*w;
+                        break;
+                    case "Left":
+                        gc.setStroke(Color.BLACK);
+                        gc.strokeLine(x,y,x-count*w,y);
+                        x-=count*w;
+                        break;
+                    case "Up":
+                        gc.setStroke(Color.BLACK);
+                        gc.strokeLine(x,y,x,y-count*h);
+                        y-=count*h;
+                        break;
+                    case "Down":
+                        gc.setStroke(Color.BLACK);
+                        gc.strokeLine(x,y,x,y+count*h);
+                        y+=count*h;
+                }
+                count=0;
+                move=solution[i];
+
+            }
+
+             */
+
+        }
+
+
+
+    }
+
+    EventHandler<MouseEvent> MarkOnMousePressedEventHandler = new EventHandler<MouseEvent>() {
+        @Override
+        public void handle(MouseEvent e) {
+            markSceneX.setValue(e.getX());
+            markSceneY.setValue(e.getY());
+            drawMark();
+        }
+    };
 
     EventHandler<MouseEvent> circleOnMousePressedEventHandler =
             new EventHandler<MouseEvent>() {
@@ -375,6 +497,13 @@ public class FlightController implements Initializable, Observer {
         viewModel.script.bindBidirectional(TextArea.textProperty());
         heading=new SimpleDoubleProperty();
         heading.bindBidirectional(viewModel.heading);
+        markSceneX=new SimpleDoubleProperty();
+        markSceneY=new SimpleDoubleProperty();
+        markSceneY.bindBidirectional(viewModel.markSceneY);
+        markSceneX.bindBidirectional(viewModel.markSceneX);
+        path=new SimpleBooleanProperty();
+        path.bindBidirectional(viewModel.path);
+        path.setValue(false);
         plane=new Image[8];
         try {
             plane[0]=new Image(new FileInputStream("./PTM1/resources/plane0.png"));
@@ -385,12 +514,13 @@ public class FlightController implements Initializable, Observer {
             plane[5]=new Image(new FileInputStream("./PTM1/resources/plane225.png"));
             plane[6]=new Image(new FileInputStream("./PTM1/resources/plane270.png"));
             plane[7]=new Image(new FileInputStream("./PTM1/resources/plane315.png"));
-
+            mark=new Image(new FileInputStream("./PTM1/resources/mark.png"));
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
     }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         if(location.getPath().equals("/C:/Users/ororl/GitHub/PTM1/production/GitHub/GUI/Flight.fxml")) {
@@ -406,7 +536,7 @@ public class FlightController implements Initializable, Observer {
             Joystick.setOnMousePressed(circleOnMousePressedEventHandler);
             Joystick.setOnMouseDragged(circleOnMouseDraggedEventHandler);
             Joystick.setOnMouseReleased(circleOnMouseReleasedEventHandler);
-
+            markX.setOnMouseClicked(MarkOnMousePressedEventHandler);
             Who=-1;
             //this.viewModel=new ViewModel();
 
@@ -420,7 +550,13 @@ public class FlightController implements Initializable, Observer {
     public void update(Observable o, Object arg) {
         if(o==viewModel)
         {
-            drawAirplane();
+            if(arg==null)
+                drawAirplane();
+            else
+            {
+                solution=(String[])arg;
+                this.drawLine();
+            }
         }
     }
 }

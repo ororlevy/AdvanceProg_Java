@@ -1,10 +1,6 @@
 package test_server;
 
-import server_side.CacheManager;
-import server_side.FileCacheManager;
-import server_side.MyClientHandler;
-import server_side.MySerialServer;
-import server_side.Server;
+import server_side.*;
 
 public class TestSetter {
 	
@@ -16,7 +12,7 @@ public class TestSetter {
 		s=new MySerialServer(); // initialize
 		CacheManager cm=new FileCacheManager();
 		MyClientHandler ch=new MyClientHandler(cm);
-		s.open(port,ch);
+		s.open(port,new ClientHandlerPath(ch));
 	}
 
 	public static void stopServer() {

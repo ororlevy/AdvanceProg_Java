@@ -92,7 +92,7 @@ public class MyClientHandler implements ClientHandler {
 			Bout.println(Solved.substring(0, Solved.length()-1));
 			Bout.flush();
 		}catch (IOException e) {e.printStackTrace();}
-		
+		/*
 		try {
 			Bin.close();
 		} catch (IOException e) {
@@ -100,6 +100,8 @@ public class MyClientHandler implements ClientHandler {
 			e.printStackTrace();
 		}
 		Bout.close();
+
+		 */
 
 	}
 
