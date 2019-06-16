@@ -1,6 +1,5 @@
-package GUI;
+package ViewModel;
 
-import Model.ClientSim;
 import Model.Model;
 import javafx.beans.property.*;
 
@@ -16,7 +15,6 @@ public class ViewModel extends Observable implements Observer {
     public DoubleProperty elevator;
     public StringProperty ip;
     public StringProperty port;
-   // private ClientSim clientSim;
     public DoubleProperty airplaneX;
     public DoubleProperty airplaneY;
     public DoubleProperty startX;
@@ -26,7 +24,6 @@ public class ViewModel extends Observable implements Observer {
     public DoubleProperty heading;
     public DoubleProperty markSceneX, markSceneY;
     public BooleanProperty path;
-    public static Object lock=new Object();
     private int data[][];
     private Model model;
 
@@ -34,11 +31,10 @@ public class ViewModel extends Observable implements Observer {
     public void setData(int[][] data)
     {
         this.data = data;
-        model.GetPlane();
+        model.GetPlane(startX.getValue(),startY.doubleValue(),offset.getValue());
     }
 
     public ViewModel() {
-        //this.clientSim = new ClientSim();
         throttle=new SimpleDoubleProperty();
         rudder=new SimpleDoubleProperty();
         aileron=new SimpleDoubleProperty();
@@ -61,6 +57,7 @@ public class ViewModel extends Observable implements Observer {
 
     public void setModel(Model model){
         this.model=model;
+
     }
 
     public void setThrottle(){
@@ -103,26 +100,21 @@ public class ViewModel extends Observable implements Observer {
     public void execute(){
         model.execute();
     }
+
     public void stopAutoPilot(){
         model.stopAutoPilot();
     }
-    public void findPath(double h,double w) {
-        if (path.getValue())
-        {
-            synchronized (ViewModel.lock) {
-                ViewModel.lock.notifyAll();
-            }
-        }
-        else
-            {
-                model.connectPath(ip.getValue(), Integer.parseInt(port.getValue()));
 
-            }
+    public void findPath(double h,double w) {
+
+
+        if (!path.getValue())
+        {
+            //if it is the first time then needed to connect
+            model.connectPath(ip.getValue(), Integer.parseInt(port.getValue()));
+        }
         model.findPath((int) (airplaneY.getValue()/-1), (int) (airplaneX.getValue() +15),Math.abs( (int) (markSceneY.getValue() / h)) ,
                Math.abs((int) (markSceneX.getValue() / w)), data );
-       // model.findPath((int) (airplaneY.getValue()/-1), (int) (airplaneX.getValue() +15),Math.abs( (int) (markSceneY.getValue() +1)) ,
-               // Math.abs((int) (markSceneX.getValue()+1)), data );
-              // , data );
     }
 
     @Override

@@ -1,13 +1,12 @@
 package flight_sim;
 
 
-import Commands.CommandExpression;
-
 import java.util.ArrayList;
 
 public class ParserAutoPilot {
     ParserMain p;
     public static volatile boolean stop=true;
+    public static volatile boolean close=false;
     public static Thread  exe;
     public int i = 0;
     public ParserAutoPilot(ParserMain p) {
@@ -23,7 +22,7 @@ public class ParserAutoPilot {
     public void execute(){
 
         exe=new Thread(()->{
-            while(true) {
+            while(!close) {
                 while (!stop && i < p.comds.size()) {
                     p.comds.get(i).calculate();
                     i++;
@@ -34,9 +33,13 @@ public class ParserAutoPilot {
         exe.start();
 
     }
+
     public void add(ArrayList<String[]> lines){
         p.lines.clear();
         p.lines.addAll(lines);
+        /*
+        Planted value in the symbol table and the while condition which allows to stop loops when the auto pilot is off
+         */
         ParserMain.symTbl.put("stop",new Var(1));
         for (String[] s:p.lines) {
             if (s[0].equals("while"))
@@ -48,7 +51,9 @@ public class ParserAutoPilot {
         }
     }
     public void stop(){
-        ParserMain.symTbl.get("stop").setV(0);
+        Var v= ParserMain.symTbl.get("stop");
+        if(v!=null)
+            v.setV(0);
         ParserAutoPilot.stop=true;
     }
     public void Continue()

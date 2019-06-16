@@ -1,6 +1,6 @@
 package server_side;
 
-import GUI.ViewModel;
+import ViewModel.ViewModel;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -18,16 +18,7 @@ public class ClientHandlerPath implements ClientHandler {
 
             while(!stop)
             {
-
                 ch.handleClient(in,out);
-                synchronized (ViewModel.lock)
-                {
-                    try {
-                        ViewModel.lock.wait();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
             }
 
 

@@ -1,21 +1,13 @@
 package GUI;
 
+import Commands.DisconnectCommand;
 import Model.Model;
+import ViewModel.ViewModel;
+import flight_sim.ParserAutoPilot;
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Slider;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class Main extends Application {
@@ -31,11 +23,17 @@ public class Main extends Application {
         viewModel.setModel(model);
         viewModel.addObserver(ctrl);
         ctrl.setViewModel(viewModel);
-
-        primaryStage.setTitle("Hello World");
+        primaryStage.setTitle("Flight Gear Simulator");
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
-        //FXMLLoader.load(getClass().getResource("Flight.fxml"));
+        primaryStage.setOnCloseRequest(event -> {
+            DisconnectCommand command=new DisconnectCommand();
+            String[] disconnect={""};
+            command.doCommand(disconnect);
+            viewModel.stopAutoPilot();
+            ParserAutoPilot.exe.interrupt();
+            model.stopAll();
+        });
 
     }
 

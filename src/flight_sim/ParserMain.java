@@ -6,6 +6,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.Stack;
 
 public class ParserMain implements Parser {
     private HashMap<String, CommandExpression> cmdTbl=new HashMap<>();
@@ -57,6 +58,23 @@ public class ParserMain implements Parser {
 
     }
 
+    private int findCloser(ArrayList<String[]> array){
+        Stack<String> stack=new Stack<>();
+        stack.push("{");
+        for(int i=0;i<array.size();i++)
+        {
+            if(array.get(i)[0].equals("while"))
+                stack.push("{");
+            if(array.get(i)[0].equals("}"))
+            {
+                stack.pop();
+                if(stack.isEmpty())
+                    return i;
+            }
+        }
+        return 0;
+    }
+
     private ArrayList<CommandExpression> parseCommands(ArrayList<String[]> array){
         ArrayList<CommandExpression> commands=new ArrayList<>();
         for (int i = 0; i < array.size(); i++) {
@@ -64,9 +82,14 @@ public class ParserMain implements Parser {
             CommandExpression e=new CommandExpression((Command)cmdFac.getNewProduct(array.get(i)[0]));
             if(e.getC()!=null) {
                 if (array.get(i)[0].equals("while")) {
+
                     int index = i;
+                    /*
                     while (!array.get(i)[0].equals("}"))
                         i++;
+
+                     */
+                    i+=findCloser(new ArrayList<>(array.subList(i+1,array.size())))+1;
                     e.setC(this.parseCondition(new ArrayList<>(array.subList(index, i))));
                 }
                 e.setS(array.get(i));

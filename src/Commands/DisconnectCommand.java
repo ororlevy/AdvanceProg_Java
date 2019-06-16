@@ -8,7 +8,7 @@ public class DisconnectCommand implements Command {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        //OpenDataServer.stop=true;
+        OpenDataServer.stop=true;
         ConnectCommand.stop=true;
         System.out.println("bye");
     }

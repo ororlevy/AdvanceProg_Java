@@ -2,7 +2,7 @@ package GUI;
 
 
 
-import Model.Interpter;
+import ViewModel.ViewModel;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -18,13 +18,12 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.QuadCurve;
 import javafx.stage.Stage;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.*;
 import java.net.URL;
 import java.util.*;
@@ -85,9 +84,9 @@ public class FlightController implements Initializable, Observer {
 
     public void LoadDate() {
         JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileFilter(new FileNameExtensionFilter("CSV Files","csv"));
         fileChooser.setCurrentDirectory(new File("./"));
         int v = fileChooser.showOpenDialog(null);
-        ArrayList<String> list = new ArrayList<>();
         if (v == JFileChooser.APPROVE_OPTION) {
             BufferedReader br = null;
             String line = "";
@@ -129,6 +128,7 @@ public class FlightController implements Initializable, Observer {
     }
 
     public  void LoadText(){
+        TextArea.clear();
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setCurrentDirectory(new File("./"));
         int v=fileChooser.showOpenDialog(null);
@@ -142,18 +142,7 @@ public class FlightController implements Initializable, Observer {
                     TextArea.appendText("\n");
 
                 }
-                /*
-                String[] stringlist=new String[list.size()];
-                for(int i=0;i<list.size();i++)
-                {
-                    stringlist[i]=list.get(i);
-                    TextArea.appendText(list.get(i));
-                    TextArea.appendText("\n");
-                }
-
-                 */
                 viewModel.parse();
-                //interpter.interpet(stringlist);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
@@ -180,6 +169,7 @@ public class FlightController implements Initializable, Observer {
 
     }
 
+    //this function opens the popup window to connect to the server that will calculate the shortest path
     public void Calc(){
         Parent root = null;
 
@@ -221,6 +211,7 @@ public class FlightController implements Initializable, Observer {
             double h = H / mapData.length;
             double w = W / mapData[0].length;
             viewModel.findPath(h,w);
+            //boolean variable which indicates if this the first time you needed to find the shortest path
             path.setValue(true);
             Stage stage = (Stage) submit.getScene().getWindow();
             stage.close();
@@ -238,27 +229,24 @@ public class FlightController implements Initializable, Observer {
         Select("manual");
     }
 
+    //this function is used as a selector between the auto-pilot and manual buttons
     public void Select(String s){
         if(s.equals("auto"))
         {
             if(manual.isSelected())
             {
-                //manual.fire();
                 manual.setSelected(false);
                 auto.setSelected(true);
 
             }
             viewModel.execute();
-           // interpter.execute();
         }
         else if(s.equals("manual"))
         {
             if(auto.isSelected())
             {
-                //auto.fire();
                 auto.setSelected(false);
                 manual.setSelected(true);
-                //interpter.stop();
                 viewModel.stopAutoPilot();
             }
 
@@ -305,29 +293,9 @@ public class FlightController implements Initializable, Observer {
         double w = W / mapData[0].length;
         GraphicsContext gc = markX.getGraphicsContext2D();
         gc.clearRect(0,0,W,H);
-       // markSceneX.setValue(nirmulMarkX(markSceneX.getValue()));
-       // markSceneY.setValue(nirmulMarkY(markSceneY.getValue()));
-        //gc.drawImage(mark, markSceneX.getValue()-13,markSceneY.getValue()-13 , 25, 25);
         gc.drawImage(mark, markSceneX.getValue()-13,markSceneY.getValue() , 25, 25);
         if(path.getValue())
             viewModel.findPath(h,w);
-    }
-
-    private double nirmulMarkX(double num)
-    {
-        double max=background.getWidth();
-        double min=0;
-        double new_min=markX.getLayoutX();
-        double new_max=markX.getWidth()+new_min;
-        return num-new_min;
-    }
-    private double nirmulMarkY(double num)
-    {
-        double max=background.getHeight();
-        double min=0;
-        double new_min=markX.getLayoutY();
-        double new_max=markX.getHeight();
-        return num-(max-new_max-1.75*new_min);
     }
 
     public void drawLine(){
@@ -367,42 +335,6 @@ public class FlightController implements Initializable, Observer {
                     y += h;
             }
             move=solution[i];
-            /*
-            if(move.equals(solution[i]))
-            {
-                count++;
-            }
-            else
-            {
-
-                switch (move) {
-                    case "Right":
-                        gc.setStroke(Color.BLACK);
-                        gc.strokeLine(x,y,x+count*w,y);
-                        x+=count*w;
-                        break;
-                    case "Left":
-                        gc.setStroke(Color.BLACK);
-                        gc.strokeLine(x,y,x-count*w,y);
-                        x-=count*w;
-                        break;
-                    case "Up":
-                        gc.setStroke(Color.BLACK);
-                        gc.strokeLine(x,y,x,y-count*h);
-                        y-=count*h;
-                        break;
-                    case "Down":
-                        gc.setStroke(Color.BLACK);
-                        gc.strokeLine(x,y,x,y+count*h);
-                        y+=count*h;
-                }
-                count=0;
-                move=solution[i];
-
-            }
-
-             */
-
         }
 
 
@@ -417,6 +349,7 @@ public class FlightController implements Initializable, Observer {
             drawMark();
         }
     };
+
 
     EventHandler<MouseEvent> circleOnMousePressedEventHandler =
             new EventHandler<MouseEvent>() {
@@ -450,6 +383,8 @@ public class FlightController implements Initializable, Observer {
                     }
                 }
             };
+
+    //these functions normalizes the data from the coordinates that are received from the mouse to the flight gear's values
     private double nirmulX(double num){
         double max=(border.getRadius()-Joystick.getRadius())+border.getCenterX();
         double min=border.getCenterX()-(border.getRadius()-Joystick.getRadius());
@@ -464,9 +399,11 @@ public class FlightController implements Initializable, Observer {
         double new_min=-1;
         return (((num-min)/(max-min)*(new_max-new_min)+new_min));
     }
+
     private  boolean isInCircle(double x,double y){
         return (Math.pow((x-border.getCenterX()),2)+Math.pow((y-border.getCenterY()),2))<=Math.pow(border.getRadius()-Joystick.getRadius(),2);
     }
+
     EventHandler<MouseEvent> circleOnMouseReleasedEventHandler =
             new EventHandler<MouseEvent>() {
                 @Override
@@ -476,6 +413,10 @@ public class FlightController implements Initializable, Observer {
                     ((Circle)(t.getSource())).setTranslateY(orgTranslateY);
                 }
             };
+
+    /*
+    This function create data members and does the data binding between the view and the viewModel
+     */
     public void setViewModel(ViewModel viewModel){
         this.viewModel=viewModel;
         throttle.valueProperty().bindBidirectional(viewModel.throttle);
@@ -521,9 +462,14 @@ public class FlightController implements Initializable, Observer {
         }
     }
 
+    /*
+    This function is responsible on data that received from the mouse
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        if(location.getPath().equals("/C:/Users/ororl/GitHub/PTM1/production/GitHub/GUI/Flight.fxml")) {
+
+        if(location.getPath().contains("Flight.fxml")) {
+
             throttle.valueProperty().addListener((observable, oldValue, newValue) -> {
                 if(manual.isSelected())
                     viewModel.setThrottle();
@@ -537,11 +483,8 @@ public class FlightController implements Initializable, Observer {
             Joystick.setOnMouseDragged(circleOnMouseDraggedEventHandler);
             Joystick.setOnMouseReleased(circleOnMouseReleasedEventHandler);
             markX.setOnMouseClicked(MarkOnMousePressedEventHandler);
+            //this variable is to distinct who popped up the window - the connect button or the calculate path button
             Who=-1;
-            //this.viewModel=new ViewModel();
-
-
-
         }
     }
 
