@@ -31,11 +31,13 @@ public class ClientSim {
     }
     public void stop()
     {
+        if(out!=null ){
         out.close();
         try {
             socket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
     }
 }

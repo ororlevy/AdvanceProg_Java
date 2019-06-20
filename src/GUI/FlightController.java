@@ -266,21 +266,21 @@ public class FlightController implements Initializable, Observer {
             lastY=airplaneY.getValue()*-1;
             gc.clearRect(0,0,W,H);
 
-            if(heading.getValue()>=0&&heading.getValue()<45)
+            if(heading.getValue()>=0&&heading.getValue()<39)
                 gc.drawImage(plane[0], w*lastX, lastY*h, 25, 25);
-            if(heading.getValue()>=45&&heading.getValue()<90)
+            if(heading.getValue()>=39&&heading.getValue()<80)
                 gc.drawImage(plane[1], w*lastX, lastY*h, 25, 25);
-            if(heading.getValue()>=90&&heading.getValue()<135)
+            if(heading.getValue()>=80&&heading.getValue()<129)
                 gc.drawImage(plane[2], w*lastX, lastY*h, 25, 25);
-            if(heading.getValue()>=135&&heading.getValue()<180)
+            if(heading.getValue()>=129&&heading.getValue()<170)
                 gc.drawImage(plane[3], w*lastX, lastY*h, 25, 25);
-            if(heading.getValue()>=180&&heading.getValue()<225)
+            if(heading.getValue()>=170&&heading.getValue()<219)
                 gc.drawImage(plane[4], w*lastX, lastY*h, 25, 25);
-            if(heading.getValue()>=225&&heading.getValue()<270)
+            if(heading.getValue()>=219&&heading.getValue()<260)
                 gc.drawImage(plane[5], w*lastX, lastY*h, 25, 25);
-            if(heading.getValue()>=270&&heading.getValue()<315)
+            if(heading.getValue()>=260&&heading.getValue()<309)
                 gc.drawImage(plane[6], w*lastX, lastY*h, 25, 25);
-            if(heading.getValue()>=315)
+            if(heading.getValue()>=309)
                 gc.drawImage(plane[7], w*lastX, lastY*h, 25, 25);
         }
 
@@ -447,15 +447,15 @@ public class FlightController implements Initializable, Observer {
         path.setValue(false);
         plane=new Image[8];
         try {
-            plane[0]=new Image(new FileInputStream("./PTM1/resources/plane0.png"));
-            plane[1]=new Image(new FileInputStream("./PTM1/resources/plane45.png"));
-            plane[2]=new Image(new FileInputStream("./PTM1/resources/plane90.png"));
-            plane[3]=new Image(new FileInputStream("./PTM1/resources/plane135.png"));
-            plane[4]=new Image(new FileInputStream("./PTM1/resources/plane180.png"));
-            plane[5]=new Image(new FileInputStream("./PTM1/resources/plane225.png"));
-            plane[6]=new Image(new FileInputStream("./PTM1/resources/plane270.png"));
-            plane[7]=new Image(new FileInputStream("./PTM1/resources/plane315.png"));
-            mark=new Image(new FileInputStream("./PTM1/resources/mark.png"));
+            plane[0]=new Image(new FileInputStream("./resources/plane0.png"));
+            plane[1]=new Image(new FileInputStream("./resources/plane45.png"));
+            plane[2]=new Image(new FileInputStream("./resources/plane90.png"));
+            plane[3]=new Image(new FileInputStream("./resources/plane135.png"));
+            plane[4]=new Image(new FileInputStream("./resources/plane180.png"));
+            plane[5]=new Image(new FileInputStream("./resources/plane225.png"));
+            plane[6]=new Image(new FileInputStream("./resources/plane270.png"));
+            plane[7]=new Image(new FileInputStream("./resources/plane315.png"));
+            mark=new Image(new FileInputStream("./resources/mark.png"));
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();

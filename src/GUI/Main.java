@@ -30,9 +30,10 @@ public class Main extends Application {
             DisconnectCommand command=new DisconnectCommand();
             String[] disconnect={""};
             command.doCommand(disconnect);
-            viewModel.stopAutoPilot();
+           // viewModel.stopAutoPilot();
             ParserAutoPilot.exe.interrupt();
             model.stopAll();
+            System.out.println("bye");
         });
 
     }

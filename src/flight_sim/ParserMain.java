@@ -33,6 +33,8 @@ public class ParserMain implements Parser {
         cmdFac.insertProduct("print",PrintCommand.class);
         cmdFac.insertProduct("sleep",SleepCommand.class);
         cmdFac.insertProduct("predicate",PredicateCommand.class);
+        cmdFac.insertProduct("autoroute",AutoRouteCommand.class);
+        cmdFac.insertProduct("if",IfCommand.class);
         cmdTbl.put("openDataServer", new CommandExpression(new OpenDataServer()));
         cmdTbl.put("connect",new CommandExpression(new ConnectCommand()));
         cmdTbl.put("while",new CommandExpression(new LoopCommand()));
@@ -63,7 +65,7 @@ public class ParserMain implements Parser {
         stack.push("{");
         for(int i=0;i<array.size();i++)
         {
-            if(array.get(i)[0].equals("while"))
+            if(array.get(i)[0].equals("while") ||array.get(i)[0].equals("if") )
                 stack.push("{");
             if(array.get(i)[0].equals("}"))
             {
@@ -81,7 +83,7 @@ public class ParserMain implements Parser {
             //CommandExpression e=cmdTbl.get(array.get(i)[0]);
             CommandExpression e=new CommandExpression((Command)cmdFac.getNewProduct(array.get(i)[0]));
             if(e.getC()!=null) {
-                if (array.get(i)[0].equals("while")) {
+                if (array.get(i)[0].equals("while") ||array.get(i)[0].equals("if") ) {
 
                     int index = i;
                     /*

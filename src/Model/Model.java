@@ -1,5 +1,6 @@
 package Model;
 
+import com.sun.org.apache.xpath.internal.operations.Mod;
 import flight_sim.Parser;
 import flight_sim.ParserAutoPilot;
 import flight_sim.ParserMain;
@@ -18,7 +19,8 @@ import java.util.Observer;
 public class Model extends Observable implements Observer {
     private ClientSim clientSim;
     public static volatile boolean stop=false;
-    public static volatile boolean turn=false;
+    public static volatile boolean turn=true;
+    public static volatile boolean head=false;
     private Interpter interpter;
     private static Socket socketpath;
     private  static PrintWriter outpath;
@@ -30,15 +32,20 @@ public class Model extends Observable implements Observer {
     double markX;
     double markY;
     int[][] data;
-    String[] solution;
     double offset;
     double currentlocationX;
     double currentlocationY;
     double currentHeading;
+    ArrayList<String[]> intersections=new ArrayList<>();
+    Thread route;
+    Thread rudder;
+    int indexPlan=0;
 
     public Model() {
         clientSim=new ClientSim();
         interpter=new Interpter();
+        route=new Thread(()->{this.routeStart();});
+        rudder=new Thread(()->{this.rudderStart();});
     }
 
     public void GetPlane(double startX,double startY, double offset){
@@ -160,124 +167,296 @@ public class Model extends Observable implements Observer {
                 System.out.println("\tsolution received");
                 System.out.println(usol);
                 String[]tmp=usol.split(",");
-                this.solution=tmp;
+
                 String[] notfiy=new String[tmp.length+1];
                 notfiy[0]="path";
                 for(i=0;i<tmp.length;i++)
                     notfiy[i+1]=tmp[i];
                 this.setChanged();
                 this.notifyObservers(notfiy);
-                this.route();
+                this.buildFlyPlan(tmp);
+                if(!route.isAlive())
+                    route.start();
+                else if(Model.turn==false)
+                {
+                    route.interrupt();
+                    route.start();
+                }
+
         }).start();
     }
 
-    public void route()
+    private void rudderStart()
     {
-        new Thread(()->{
-            ArrayList<String[]> intersection=new ArrayList<>();
-            int count=0;
-            double intersectionX=0;
-            double intersectionY=0;
-            int x=(int)planeX,y=(int)planeY;
-            double alt=2000;
-            planeX=startY+(planeX-1)*offset*(-1);
-            planeY=startX+(planeY-1)*offset;
-            markX=startY+(markX-1)*offset;
-            markY=startX+(markY-1)*offset;
-            double heading = 0;
-            boolean flag=true;
-            for(int i=0;i<solution.length-1;i++)
-            {
-                if(solution[i].equals(solution[i+1]))
-                {
-                    count++;
-                }
-                else
-                {
-                    String[] tmp=new String[2];
-                    tmp[0]=solution[i];
-                    tmp[1]=count+1+"";
-                    intersection.add(tmp);
-                    count=0;
-
-                }
+        while(!head &&indexPlan<intersections.size()) {
+            boolean flag;
+            double heading,headingC;
+            double tmp;
+            heading = Integer.parseInt(intersections.get(indexPlan)[0]);
+            headingC=currentHeading;
+            int degree, degreeCom;
+            degree = (int) (heading - headingC);
+            if (degree < 0)
+                degree += 360;
+            degreeCom = 360 - degree;
+            double turning=headingC;
+            if (degree < degreeCom) {
+                turning=turnPlus(headingC);
+                tmp = ( turning- headingC);
+                flag=true;
             }
-            if(count!=0)
-            {
-                String[] tmp=new String[2];
-                tmp[0]=solution[solution.length-1];
-                tmp[1]=count+1+"";
-                intersection.add(tmp);
-            }
-            int i=0;
-            while(!turn&&i<intersection.size())
-            {
-                if(flag) {
-                    switch (intersection.get(i)[0]) {
-                        case "Down":
-                            heading = 180;
-                            intersectionY = planeY - Double.parseDouble(intersection.get(i)[1]) * offset;
-                            intersectionX=planeX;
-                            alt=data[(y- Integer.parseInt(intersection.get(i)[1]))][x];
-                            break;
-                        case "Up":
-                            heading = 0;
-                            intersectionY = planeY + Double.parseDouble(intersection.get(i)[1]) * offset;
-                            intersectionX=planeX;
-                            alt=data[(y+ Integer.parseInt(intersection.get(i)[1]))][x];
-                            break;
-                        case "Left":
-                            heading = 270;
-                            intersectionX = planeX - Double.parseDouble(intersection.get(i)[1]) * offset;
-                            intersectionY=planeY;
-                            alt=data[y][(x+ Integer.parseInt(intersection.get(i)[1]))];
-                            break;
-                        case "Right":
-                            heading = 90;
-                            intersectionX = planeX + Double.parseDouble(intersection.get(i)[1]) * offset;
-                            intersectionY=planeY;
-                            alt=data[y][(x- Integer.parseInt(intersection.get(i)[1]))];
-                            break;
-                    }
-                    if(Math.abs(alt-ParserMain.symTbl.get("alt").getV())>500)
-                    {
-                        double tmp=1/100;
-                        if (ParserMain.symTbl.get("alt").getV() < alt )
-                            ParserMain.symTbl.get("p").setV(tmp);
-                        else
-                            ParserMain.symTbl.get("p").setV(-tmp);
-                    }
-                }
-                int num=((int)Math.abs(heading-currentHeading)/45)*45;
-                if(Math.abs(heading-currentHeading)>40) {
-                    if (heading - currentHeading < 0) {
-                        ParserMain.symTbl.get("hroute").setV(heading + num);
-                    } else {
-                        ParserMain.symTbl.get("hroute").setV(heading - num);
-                    }
-                }
-                else
-                {
-                    ParserMain.symTbl.get("hroute").setV(heading);
-                }
-
-
+            else {
+                turning=turnMinus(headingC);
+                tmp = (turning - headingC);
                 flag=false;
-                if(planeX<=intersectionX+offset*20&&planeX>=intersectionX-offset*20)
-                    if(planeY<intersectionY+offset*20&&planeY>intersectionY-offset*20)
-                    {
-                        flag=true;
-                        i++;
-                    }
+            }
+            if(tmp>=340)
+                tmp=360-tmp;
+            else if(tmp<-340)
+                tmp=-360-tmp;
+            if(Math.abs(heading-headingC)>9 && Math.abs(heading-headingC)<349) {
+                ParserMain.symTbl.get("r").setV(tmp/20);
+                ParserMain.symTbl.get("e").setV(0.095);
+            }
+            else {
+                ParserMain.symTbl.get("r").setV(tmp / 100);
+                ParserMain.symTbl.get("e").setV(0.053);
+            }
+            try {
+                Thread.sleep(250);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+    }
+    private void routeStart()
+    {
+        while(turn) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        rudder.start();
+        double intersectionX,intersectionY,pathX,pathY,endX,endY;
+        pathX=startX+(planeY-1)*offset;
+        pathY=startY-(planeX-1)*offset;
+        endX=startX+(markY-1)*offset;
+        endY=startY-(markX-1)*offset;
+        int radiusX=17,radiusY=7;
+        while(!turn && indexPlan<intersections.size()) {
+            int h = Integer.parseInt(intersections.get(indexPlan)[0]);
+            int n = Integer.parseInt(intersections.get(indexPlan)[1]);
+            switch (h) {
+                case 360:
+                    intersectionX = pathX;
+                    intersectionY = pathY + (n - 1) * offset;
+                    break;
+                case 45:
+                    intersectionX = pathX + (n - 1) * offset;
+                    intersectionY = pathY + (n - 1) * offset;
+                    break;
+                case 90:
+                    intersectionX = pathX + (n - 1) * offset;
+                    intersectionY = pathY;
+                    break;
+                case 135:
+                    intersectionX = pathX + (n - 1) * offset;
+                    intersectionY = pathY - (n - 1) * offset;
+                    break;
+                case 180:
+                    intersectionX = pathX;
+                    intersectionY = pathY - (n - 1) * offset;
+                    ;
+                    break;
+                case 225:
+                    intersectionX = pathX - (n - 1) * offset;
+                    intersectionY = pathY - (n - 1) * offset;
+                    break;
+                case 270:
+                    intersectionX = pathX - (n - 1) * offset;
+                    intersectionY = pathY;
+                    break;
+                case 315:
+                    intersectionX = pathX - (n - 1) * offset;
+                    intersectionY = pathY + (n - 1) * offset;
+                    break;
+                default:
+                    intersectionX = 0;
+                    intersectionY = 0;
+            }
+            if(indexPlan==intersections.size()-1)
+            {
+                intersectionX=endX;
+                intersectionY=endY;
+                radiusY=20;
+            }
+            while (Math.abs(currentlocationX - intersectionX) >radiusX * offset || Math.abs(currentlocationY - intersectionY) > radiusX * offset) {
                 try {
-                    Thread.sleep(130);
+                    Thread.sleep(250);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
-            ParserMain.symTbl.get("goal").setV(1);
 
-    }).start();
+            indexPlan++;
+            pathX=currentlocationX;
+            pathY=currentlocationY;
+
+        }
+        ParserMain.symTbl.get("goal").setV(1);
+
+    }
+    private void buildFlyPlan(String[] solution)
+    {
+        intersections=new ArrayList<>();
+        int count=0;
+        for(int i=0;i<solution.length-1;i++)
+        {
+            if(solution[i].equals(solution[i+1]))
+            {
+                count++;
+            }
+            else
+            {
+                String[] tmp = new String[2];
+                tmp[0] = solution[i];
+                tmp[1] = count + 1 + "";
+                intersections.add(tmp);
+                count=0;
+            }
+        }
+        if(count!=0)
+        {
+            String[] tmp=new String[2];
+            tmp[0]=solution[solution.length-1];
+            tmp[1]=count+1+"";
+            intersections.add(tmp);
+        }
+        for(int i=0;i<intersections.size();i++)
+        {
+            int tmp=Integer.parseInt(intersections.get(i)[1]);
+            if(tmp<=5)
+            {
+                int index;
+                int tmp2;
+                if(i!=0) {
+                    index=i-1;
+                }
+                else
+                {
+                    index=i+1;
+                }
+                tmp2 = Integer.parseInt(intersections.get(index)[1]);
+                tmp2+=tmp;
+                String[] strings=new String[]{intersections.get(index)[0],tmp2+""};
+                intersections.set(index,strings);
+                intersections.remove(i);
+            }
+        }
+        for(int i=0;i<intersections.size()-1;i++)
+        {
+            if(intersections.get(i)[0].equals(intersections.get(i+1)[0]))
+            {
+                int tmp=Integer.parseInt(intersections.get(i)[1])+Integer.parseInt(intersections.get(i+1)[1]);
+                String s=""+tmp;
+                intersections.get(i)[1]=s;
+                intersections.remove(i+1);
+            }
+        }
+        for(int i=0;i<intersections.size();i++)
+        {
+            int tmp=Integer.parseInt(intersections.get(i)[1]);
+            String direct=intersections.get(i)[0];
+            int degree=clacDegree(direct);
+            if(tmp<=15&&tmp>5)
+            {
+                if(i+1<intersections.size())
+                {
+                    if(degree!=360 && degree!=90) {
+                        if (degree < clacDegree(intersections.get(i + 1)[0]))
+                            degree += 45;
+                        else
+                            degree -= 45;
+                    }
+                    else if(degree==360){
+                        if(clacDegree(intersections.get(i + 1)[0])==90)
+                            degree=45;
+                        else
+                            degree-=45;
+                    }
+                    else if(degree==90)
+                    {
+                        if(clacDegree(intersections.get(i + 1)[0])==360)
+                            degree=45;
+                        else
+                            degree-=45;
+                    }
+                }
+            }
+
+            String s=new String();
+            s=degree+"";
+            intersections.get(i)[0]=s.intern();
+        }
+
+    }
+    private int clacDegree(String s)
+    {
+        int degree=0;
+        switch (s){
+            case "Down":
+                degree=180;
+                break;
+            case "Right":
+                degree=90;
+                break;
+            case "Left":
+                degree=270;
+                break;
+            case "Up":
+                degree=360;
+        }
+        return degree;
+    }
+    public interface Turn {
+     double Do(double x);
+    }
+
+    public void makeTurn(Turn t,double heading,double currentHeading)
+    {
+        double minus=Math.abs(heading-currentHeading);
+        double h=currentHeading;
+        while(minus>30 && minus < 335 &&!Model.turn)
+        {
+            double tmp=t.Do(h);
+            ParserMain.symTbl.get("hroute").setV(tmp);
+            try {
+                Thread.sleep(2500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            minus=Math.abs(heading-tmp);
+            h=tmp;
+        }
+        ParserMain.symTbl.get("hroute").setV(heading);
+    }
+    public double turnPlus(double currentHeading)
+    {
+        int tmp=(int)currentHeading+7;
+        if(tmp>360)
+            tmp-=360;
+        return tmp;
+    }
+    public double turnMinus(double currentHeading)
+    {
+        int tmp=(int)currentHeading-7;
+        if(tmp<0)
+            tmp=360+tmp;
+        return  tmp;
     }
 
     public void stopAll()
@@ -294,6 +473,7 @@ public class Model extends Observable implements Observer {
             e.printStackTrace();
         }
         clientSim.stop();
+        ParserAutoPilot.exe.interrupt();
         ParserAutoPilot.close=true;
         Model.turn=true;
     }

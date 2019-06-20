@@ -24,7 +24,8 @@ public class Interpter {
                 "var hroute = 0",
                 "var goal = 0",
                 "var altr = 2000",
-                "var p=0"
+                "var e=0",
+                "var r=0"
 
         };
         lexer=new LexerMain(start);

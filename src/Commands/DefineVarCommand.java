@@ -29,6 +29,8 @@ public class DefineVarCommand implements Command {
 				ParserMain.symTbl.put(array[1],v);
 			}
 		}
+		else
+			ParserMain.symTbl.put(array[1],new Var());
 
 	}
 
