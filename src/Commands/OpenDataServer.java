@@ -10,6 +10,7 @@ import java.io.PrintWriter;
 
 import Commands.Command;
 import Experssions.ShuntingYard;
+import flight_sim.Parser;
 import flight_sim.ParserMain;
 import server_side.ClientHandler;
 import server_side.MySerialServer;
@@ -17,28 +18,34 @@ import server_side.Server;
 
 public class OpenDataServer implements Command {
 	public static volatile boolean stop=false;
+	public static Object wait=new Object();
 	Server s;
 	@Override
 	public void doCommand(String[] array) {
 		stop=false;
+
 		s=new MySerialServer();
 		s.open(Integer.parseInt(array[1]), new ClientHandler() {
-			
 			@Override
 			public void handleClient(InputStream in, OutputStream out) {
 				BufferedReader Bin=new BufferedReader(new InputStreamReader(in));
+				synchronized (OpenDataServer.wait) {
+					OpenDataServer.wait.notifyAll();
+				}
 				//PrintWriter Bout=new PrintWriter(new OutputStreamWriter(out));
 				while (!stop) {
 					try {
 						String Line;
 						Line = Bin.readLine();
 						String[] vars = Line.split(",");
-						if (ParserMain.symTbl.get("simX").getV() != Double.parseDouble(vars[0]))
-							ParserMain.symTbl.get("simX").setV(Double.parseDouble(vars[0]));
-						if (ParserMain.symTbl.get("simY").getV() != Double.parseDouble(vars[1]))
-							ParserMain.symTbl.get("simY").setV(Double.parseDouble(vars[1]));
-						if (ParserMain.symTbl.get("simZ").getV() != Double.parseDouble(vars[2]))
-							ParserMain.symTbl.get("simZ").setV(Double.parseDouble(vars[2]));
+						for (int i=0;i<vars.length;i++)
+						{
+							if(Double.parseDouble(vars[i])!=ParserMain.symTbl.get(ParserMain.vars.get(i)).getV())
+								ParserMain.symTbl.get(ParserMain.vars.get(i)).setV(Double.parseDouble(vars[i]));
+
+						}
+
+
 
 					} catch(IOException e1){
 						// TODO Auto-generated catch block

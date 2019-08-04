@@ -27,7 +27,7 @@ public class FileCacheManager<Problem,Solution> implements CacheManager<Problem,
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		this.disc=new HashMap<Problem,Solution>();
+		this.disc=new HashMap<>();
 		if(prop!=null)
 		{
 			

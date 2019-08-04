@@ -2,18 +2,24 @@ package flight_sim;
 
 import Commands.*;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Scanner;
+import java.util.Stack;
 
 public class ParserMain implements Parser {
     private HashMap<String, CommandExpression> cmdTbl=new HashMap<>();
     private GenericFactory cmdFac=new GenericFactory();
     public static HashMap<String,Var> symTbl;
-    private ArrayList<String[]> lines;
-    private ArrayList<CommandExpression> comds;
+    public ArrayList<String[]> lines;
+    public ArrayList<CommandExpression> comds;
     public static double returnval;
+    public static HashMap<String, String> varLocations = new HashMap<>();
+    public static ArrayList<String> vars;
 
     public ParserMain(ArrayList<String[]> lines) {
+
         this.comds=new ArrayList<>();
         this.lines = lines;
         symTbl=new HashMap<>();
@@ -24,6 +30,11 @@ public class ParserMain implements Parser {
         cmdFac.insertProduct("return",ReturnCommand.class);
         cmdFac.insertProduct("=",AssignCommand.class);
         cmdFac.insertProduct("disconnect",DisconnectCommand.class);
+        cmdFac.insertProduct("print",PrintCommand.class);
+        cmdFac.insertProduct("sleep",SleepCommand.class);
+        cmdFac.insertProduct("predicate",PredicateCommand.class);
+        cmdFac.insertProduct("autoroute",AutoRouteCommand.class);
+        cmdFac.insertProduct("if",IfCommand.class);
         cmdTbl.put("openDataServer", new CommandExpression(new OpenDataServer()));
         cmdTbl.put("connect",new CommandExpression(new ConnectCommand()));
         cmdTbl.put("while",new CommandExpression(new LoopCommand()));
@@ -31,9 +42,39 @@ public class ParserMain implements Parser {
         cmdTbl.put("return",new CommandExpression(new ReturnCommand()));
         cmdTbl.put("=",new CommandExpression(new AssignCommand()));
         cmdTbl.put("disconnect",new CommandExpression(new DisconnectCommand()));
-        symTbl.put("simX",new Var());
-        symTbl.put("simY",new Var());
-        symTbl.put("simZ",new Var());
+        Scanner s= null;
+        try {
+            s = new Scanner(new BufferedReader(new FileReader("simulator_vars.txt")));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        vars=new ArrayList<>();
+        while(s.hasNext())
+        {
+            vars.add(s.nextLine());
+        }
+        for (String str:vars)
+        {
+            symTbl.put(str,new Var(str));
+        }
+
+    }
+
+    private int findCloser(ArrayList<String[]> array){
+        Stack<String> stack=new Stack<>();
+        stack.push("{");
+        for(int i=0;i<array.size();i++)
+        {
+            if(array.get(i)[0].equals("while") ||array.get(i)[0].equals("if") )
+                stack.push("{");
+            if(array.get(i)[0].equals("}"))
+            {
+                stack.pop();
+                if(stack.isEmpty())
+                    return i;
+            }
+        }
+        return 0;
     }
 
     private ArrayList<CommandExpression> parseCommands(ArrayList<String[]> array){
@@ -42,10 +83,15 @@ public class ParserMain implements Parser {
             //CommandExpression e=cmdTbl.get(array.get(i)[0]);
             CommandExpression e=new CommandExpression((Command)cmdFac.getNewProduct(array.get(i)[0]));
             if(e.getC()!=null) {
-                if (array.get(i)[0].equals("while")) {
+                if (array.get(i)[0].equals("while") ||array.get(i)[0].equals("if") ) {
+
                     int index = i;
+                    /*
                     while (!array.get(i)[0].equals("}"))
                         i++;
+
+                     */
+                    i+=findCloser(new ArrayList<>(array.subList(i+1,array.size())))+1;
                     e.setC(this.parseCondition(new ArrayList<>(array.subList(index, i))));
                 }
                 e.setS(array.get(i));
@@ -61,9 +107,14 @@ public class ParserMain implements Parser {
         return commands;
     }
 
-    public double parse() {
+    public void parse() {
         this.comds=this.parseCommands(lines);
+
+    }
+
+    public double execute(){
         for (CommandExpression e:comds) {
+            //System.out.println(e.getS()[1]);
             e.calculate();
         }
         return returnval;
@@ -73,10 +124,10 @@ public class ParserMain implements Parser {
 
     private Command parseCondition(ArrayList<String[]> array) {
 
-        ConditionCommand c=(ConditionCommand)cmdTbl.get(array.get(0)[0]).getC();
+        ConditionCommand c=(ConditionCommand)cmdFac.getNewProduct(array.get(0)[0]);
         int i=0;
         ArrayList<CommandExpression> tmp=new ArrayList<>();
-        CommandExpression cmdtmp=new CommandExpression(new PredicateCommand());
+        CommandExpression cmdtmp=new CommandExpression((Command)cmdFac.getNewProduct("predicate"));
         cmdtmp.setS(array.get(0));
         tmp.add(cmdtmp);
         c.setCommands(tmp);

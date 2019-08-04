@@ -23,15 +23,15 @@ public class MyClientHandler implements ClientHandler {
 			try {
 				String Line;
 				String Solved;
-				ArrayList<String[]> lines=new ArrayList<String[]>();
-				
+				ArrayList<String[]> lines=new ArrayList<>();
+				//System.out.println(Bin.readLine());
 				while(!(Line= Bin.readLine()).equals("end"))
 				{
 					lines.add(Line.split(","));
 				}
 				int j=0;
 				int[][]mat=new int[lines.size()][];
-				for (int i = 0; i < mat.length; i++) {
+				for (int i = 0; i < mat.length-1; i++) {
 					String[] tmp=lines.get(i);
 					mat[i]=new int[tmp.length];
 					for (String s : tmp) {
@@ -41,7 +41,22 @@ public class MyClientHandler implements ClientHandler {
 					j=0;
 				}
 			Matrix m=new Matrix(mat);
-			Searcher searcher=new BFS();
+				Astar.Heuristic heuristic=new Astar.Heuristic() {
+					@Override
+					public double cost(State s, State goalState) {
+						String start=(String)(s.getState());
+						String[] tmp=start.split(",");
+						double x1=Integer.parseInt(tmp[0]);
+						double y1=Integer.parseInt(tmp[1]);
+						String end=(String)goalState.getState();
+						tmp=end.split(",");
+						double x2=Integer.parseInt(tmp[0]);
+						double y2=Integer.parseInt(tmp[1]);
+						return Math.sqrt(Math.pow(x1-x2,2)+Math.pow(y1-y2,2));
+					}
+				};
+			//Searcher searcher=new BFS();
+			Searcher searcher=new Astar(heuristic);
 			solver=new SolverSearcher<>(searcher);
 			m.setIntialState(Line= Bin.readLine());
 			m.setGoalState(Line= Bin.readLine());
@@ -77,7 +92,7 @@ public class MyClientHandler implements ClientHandler {
 			Bout.println(Solved.substring(0, Solved.length()-1));
 			Bout.flush();
 		}catch (IOException e) {e.printStackTrace();}
-		
+		/*
 		try {
 			Bin.close();
 		} catch (IOException e) {
@@ -85,6 +100,8 @@ public class MyClientHandler implements ClientHandler {
 			e.printStackTrace();
 		}
 		Bout.close();
+
+		 */
 
 	}
 

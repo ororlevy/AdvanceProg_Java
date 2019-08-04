@@ -10,5 +10,6 @@ public class DisconnectCommand implements Command {
         }
         OpenDataServer.stop=true;
         ConnectCommand.stop=true;
+        System.out.println("bye");
     }
 }

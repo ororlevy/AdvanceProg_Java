@@ -1,5 +1,9 @@
 package flight_sim;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -9,7 +13,11 @@ public class LexerMain<V> implements Lexer {
     private String[] stringarray=null;
 
     public LexerMain(String v) {
-        scan = new Scanner(v);
+        try {
+            scan = new Scanner(new BufferedReader(new FileReader(v)));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
     public LexerMain(String[] s)
     {
@@ -30,7 +38,7 @@ public class LexerMain<V> implements Lexer {
         }
         else
             while (scan.hasNextLine()) {
-                lines.add(scan.nextLine().replaceFirst("="," = ").split("\\s+"));
+                lines.add(scan.nextLine().replaceFirst("=", " = ").replaceFirst("\t","").split("\\s+"));
             }
         return lines;
 

@@ -20,7 +20,7 @@ public class ParserSim implements Parser{
 	
 
 
-	public double parse() {
+	public void parse() {
 		for (int i = 0; i < lines.size(); i++) {
 			Command c=cmdTbl.get(lines.get(i)[0]);
 			if(c!=null)
@@ -34,7 +34,7 @@ public class ParserSim implements Parser{
 
 				c.doCommand(lines.get(i));
 		}
-		return 0;
+
 	}
 	private void parseCondition(ArrayList<String[]> array) {
 		ArrayList<Command> comds=new ArrayList<>();
